@@ -2,9 +2,11 @@ package com.example.dataset.common.controller;
 
 import com.example.dataset.common.mapper.GenericMapper;
 import com.example.dataset.common.service.GenericService;
+import com.example.dataset.common.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,39 +24,43 @@ public abstract class GenericController<T, D, ID> {
     protected abstract GenericMapper<T, D> getMapper();
 
     @PostMapping
-    public ResponseEntity<D> create(@RequestBody D dto) {
+    public ResponseEntity<ApiResponse<D>> create(@Valid @RequestBody D dto) {
         T entity = getMapper().toEntity(dto);
         T savedEntity = getService().save(entity);
-        return new ResponseEntity<>(getMapper().toDto(savedEntity), HttpStatus.CREATED);
+        D savedDto = getMapper().toDto(savedEntity);
+        return new ResponseEntity<>(ApiResponse.created(savedDto, "Création réussie"), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<D> getById(@PathVariable ID id) {
+    public ResponseEntity<ApiResponse<D>> getById(@PathVariable ID id) {
         Optional<T> entityOpt = getService().findById(id);
-        return entityOpt.map(entity -> ResponseEntity.ok(getMapper().toDto(entity)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return entityOpt.map(entity -> ResponseEntity.ok(ApiResponse.success(getMapper().toDto(entity), "Récupération réussie")))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error(404, "Entité non trouvée")));
     }
 
     @GetMapping
-    public ResponseEntity<List<D>> getAll() {
+    public ResponseEntity<ApiResponse<List<D>>> getAll() {
         List<T> entities = getService().findAll();
-        return ResponseEntity.ok(getMapper().toDto(entities));
+        return ResponseEntity.ok(ApiResponse.success(getMapper().toDto(entities), "Récupération de la liste réussie"));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<D> update(@PathVariable ID id, @RequestBody D dto) {
+    public ResponseEntity<ApiResponse<D>> update(@PathVariable ID id, @Valid @RequestBody D dto) {
         try {
             T entity = getMapper().toEntity(dto);
             T updatedEntity = getService().update(id, entity);
-            return ResponseEntity.ok(getMapper().toDto(updatedEntity));
+            D updatedDto = getMapper().toDto(updatedEntity);
+            return ResponseEntity.ok(ApiResponse.success(updatedDto, "Mise à jour réussie"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error(404, "Entité non trouvée pour la mise à jour"));
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable ID id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable ID id) {
         getService().deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Suppression réussie"));
     }
 }

@@ -1,23 +1,46 @@
 package com.example.dataset.common.service;
 
+import com.example.dataset.common.repository.GenericRepository;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Generic service interface.
+ * Abstract GenericService class.
  *
  * @param <T> Entity class
  * @param <ID> ID class
  */
-public interface GenericService<T, ID> {
+public abstract class GenericService<T, ID> {
 
-    T save(T entity);
+    protected abstract GenericRepository<T, ID> getRepository();
 
-    Optional<T> findById(ID id);
+    @Transactional
+    public T save(T entity) {
+        return getRepository().save(entity);
+    }
 
-    List<T> findAll();
+    @Transactional(readOnly = true)
+    public Optional<T> findById(ID id) {
+        return getRepository().findById(id);
+    }
 
-    T update(ID id, T entity);
+    @Transactional(readOnly = true)
+    public List<T> findAll() {
+        return getRepository().findAll();
+    }
 
-    void deleteById(ID id);
+    @Transactional
+    public T update(ID id, T entity) {
+        if (!getRepository().existsById(id)) {
+            throw new IllegalArgumentException("Entity with id " + id + " not found");
+        }
+        return getRepository().save(entity);
+    }
+
+    @Transactional
+    public void deleteById(ID id) {
+        getRepository().deleteById(id);
+    }
 }
