@@ -32,7 +32,7 @@ public abstract class GenericController<T, D, ID> {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<D>> getById(@PathVariable ID id) {
+    public ResponseEntity<ApiResponse<D>> getById(@PathVariable("id") ID id) {
         Optional<T> entityOpt = getService().findById(id);
         return entityOpt.map(entity -> ResponseEntity.ok(ApiResponse.success(getMapper().toDto(entity), "Récupération réussie")))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -46,7 +46,7 @@ public abstract class GenericController<T, D, ID> {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<D>> update(@PathVariable ID id, @Valid @RequestBody D dto) {
+    public ResponseEntity<ApiResponse<D>> update(@PathVariable("id") ID id, @Valid @RequestBody D dto) {
         try {
             T entity = getMapper().toEntity(dto);
             T updatedEntity = getService().update(id, entity);
@@ -59,7 +59,7 @@ public abstract class GenericController<T, D, ID> {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable ID id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") ID id) {
         getService().deleteById(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Suppression réussie"));
     }
