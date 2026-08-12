@@ -41,65 +41,14 @@ cd dataset_backend
 
 | URL | Description |
 |-----|-------------|
-| `http://localhost:8085` | API REST |
-| `http://localhost:8085/swagger-ui/index.html` | Documentation interactive Swagger UI |
-| `http://localhost:8085/h2-console` | Console H2 (base en mémoire) |
+| `http://localhost:8080` | API REST |
+| `http://localhost:8080/swagger-ui/index.html` | Documentation interactive Swagger UI |
+| `http://localhost:8080/h2-console` | Console H2 (base en mémoire) |
 
 > **Note :** Pour une utilisation complète avec le frontend Angular, assurez-vous que le projet [dataset_frontend](https://github.com/ao627515/dataset_frontend) tourne sur le port **4200**.
 
 ---
 
-## Modèle de Données
-
-### Entités & Attributs
-
-#### `Dataset`
-| Attribut | Type | Contrainte |
-|----------|------|-----------|
-| `id` | `Long` | Clé primaire, auto-générée |
-| `nom` | `String` | **Obligatoire** |
-| `description` | `String` | Optionnel |
-| `source` | `String` | **Obligatoire** |
-| `nombreObservations` | `Long` | **Obligatoire** |
-| `format` | `String` | CSV, JSON, Parquet, Image, Text... |
-| `dateAjout` | `LocalDateTime` | **Auto-rempli** à la création (`@PrePersist`) |
-
-#### `ModeleML`
-| Attribut | Type | Contrainte |
-|----------|------|-----------|
-| `id` | `Long` | Clé primaire, auto-générée |
-| `nom` | `String` | **Obligatoire** |
-| `type` | `String` | **Obligatoire** — Classification, Régression, Clustering... |
-| `algorithme` | `String` | **Obligatoire** — Random Forest, XGBoost, SVM, ResNet... |
-| `version` | `String` | Optionnel |
-| `dateCreation` | `LocalDateTime` | **Auto-rempli** à la création (`@PrePersist`) |
-
-#### `Experimentation`
-| Attribut | Type | Contrainte |
-|----------|------|-----------|
-| `id` | `Long` | Clé primaire, auto-générée |
-| `dataset` | `Dataset` | **Obligatoire** — `@ManyToOne` |
-| `modele` | `ModeleML` | **Obligatoire** — `@ManyToOne` |
-| `accuracy` | `Double` | Entre **0.0** et **1.0** |
-| `f1Score` | `Double` | Entre **0.0** et **1.0** |
-| `dureeEntrainement` | `Long` | Durée en secondes |
-| `dateExecution` | `LocalDateTime` | **Auto-rempli** à la création (`@PrePersist`) |
-
-### Relations entre Entités
-
-```
-Dataset      ──< Experimentation >── ModeleML
-(1)          (*)              (*)    (1)
-@OneToMany       @ManyToOne @ManyToOne   @OneToMany
-(mappedBy=       (dataset)  (modele)     (mappedBy=
- "dataset")                              "modele")
-```
-
-- Une `Experimentation` référence **exactement un** `Dataset` et **un** `ModeleML` (`@ManyToOne`)
-- Un `Dataset` peut être utilisé par **plusieurs** expérimentations (`@OneToMany` inverse)
-- Un `ModeleML` peut être utilisé par **plusieurs** expérimentations (`@OneToMany` inverse)
-
----
 
 ## Architecture & Concepts Backend
 
