@@ -27,4 +27,10 @@ public class Experimentation {
     private Double f1Score;
     private Long dureeEntrainement;
     private LocalDateTime dateExecution;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dateExecution = LocalDateTime.now();
+    }
 }
+

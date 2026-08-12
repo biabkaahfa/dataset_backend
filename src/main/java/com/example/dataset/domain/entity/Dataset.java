@@ -1,10 +1,12 @@
 package com.example.dataset.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -21,4 +23,13 @@ public class Dataset {
     private Long nombreObservations;
     private String format;
     private LocalDateTime dateAjout;
+
+    @OneToMany(mappedBy = "dataset", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Experimentation> experimentations;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dateAjout = LocalDateTime.now();
+    }
 }
